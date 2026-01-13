@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Paciente } from './interfaces/interfaces.components';
 import { PacienteCard } from './paciente-card/paciente-card';
+import { PatientService } from './service/patient-service';
 
 
 
@@ -14,7 +15,7 @@ import { PacienteCard } from './paciente-card/paciente-card';
       <h1>🏥 Z-0: MONITOR DE BIO-SEÑALES</h1>
 
       <div class="grid-pacientes">
-        @for (paciente of pacientes; track paciente.id) {
+        @for (paciente of patient$|async; track paciente.id) {
           <app-paciente-card [pacienteInfo]="paciente" (curarClick)="administrarCura(paciente)" (bajaClick)="darDeBaja($event)"></app-paciente-card>
         }
       </div>
@@ -64,24 +65,24 @@ import { PacienteCard } from './paciente-card/paciente-card';
   `]
 })
 export class AppComponent {
-  pacientes: Paciente[] = [
-    { id: 1, nombre: 'Marcus Fenix', infeccion: 15, estado: 'estable' },
-    { id: 2, nombre: 'Sarah Connor', infeccion: 85, estado: 'critico' },
-    { id: 3, nombre: 'Ellen Ripley', infeccion: 0, estado: 'estable' }
-  ];
+  
+  private patientService = inject(PatientService);
+  patient$ = this.patientService.getPatient();
 
   administrarCura(p: Paciente) {
-    if (p.infeccion > 0) p.infeccion -= 10;
-    if (p.infeccion < 0) p.infeccion = 0;
-    this.actualizarEstado(p);
+    // if (p.infeccion > 0) p.infeccion -= 10;
+    // if (p.infeccion < 0) p.infeccion = 0;
+    // this.actualizarEstado(p);
+    this.patientService.curar(p.id);
   }
 
   darDeBaja(id: number) {
-    this.pacientes = this.pacientes.filter(p => p.id !== id);
+    this.patientService.baja(id);
   }
 
   private actualizarEstado(p: Paciente) {
-    if (p.infeccion > 70) p.estado = 'critico';
-    else p.estado = 'estable';
+    // if (p.infeccion > 70) p.estado = 'critico';
+    // else p.estado = 'estable';
+    this.patientService.updateEstado(p);
   }
 }
